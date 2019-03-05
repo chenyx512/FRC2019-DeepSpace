@@ -92,6 +92,7 @@ public final class Main {
             if(!isRun){
                 System.out.printf("all threads busy\n");
             }
+            ntinst.flush();
         }
     }
 

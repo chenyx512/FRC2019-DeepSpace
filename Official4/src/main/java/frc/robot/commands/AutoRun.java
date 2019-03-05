@@ -6,16 +6,18 @@ import frc.robot.*;
 import frc.robot.libs.*;
 
 public class AutoRun extends Command {
-    public double P = 5e-3, I = 3e-4, D = 3.2e-5;
-    private double integral, previousError, derivative;
-    private double toTargetTheta, angularPower = 0, angularError = 0;
-    private boolean isShoot;
+    public boolean isGet=false;
+
     private RobotState robotState = RobotState.getInstance();
     private Vision vision = Vision.getInstance();
     private Control control=Control.getInstance();
-    private Pose pose, target;
-    private double toTargetDis;
     private HUD hud=HUD.getInstance();
+
+    private double P=0.02;
+    private double toTargetDis, toTargetTheta, angularPower = 0, angularError = 0;
+    private boolean isShoot;
+    private Pose pose, target;
+    double linSpeed;
 
     public AutoRun() {
         requires(Robot.driveTrain);
@@ -27,34 +29,34 @@ public class AutoRun extends Command {
         vision.setPrimaryLock();
         if(!isContinue())
             return;
-        previousError=angularError;
         isShoot = false;
-        previousError=Double.NaN;
-        Robot.hatchArm.isSlideForward = false;
-        Robot.hatchArm.isHatchGrabberOpen = true;
+        Robot.hatchArm.isSlideForward = isGet;
+        Robot.hatchArm.isHatchGrabberOpen = !isGet;
     }
     
     @Override
     protected void execute() {
         if(!isContinue())
             return;
-        SmartDashboard.putNumber("error", angularError);
         toTargetDis=pose.distance(target);
-        System.out.printf("toTarget:%.1f\n",toTargetDis);
-        if ( toTargetDis<Constants.SHOOT_DIS && angularError<Constants.MAX_ALLOWED_ANGLE_ERROR 
-                ||  toTargetDis<Constants.SHOOT_DIS-100 && !isShoot
-                || control.getAutoShoot()&&!isShoot) {
+        linSpeed=Robot.driveTrain.getLinearSpeed();
+        if (isShoot()) {
             System.out.println("!!!!!!!!!!!!! shoot !!!!!!!!!!!!!");
             isShoot = true;
-            Robot.hatchArm.isSlideForward = true;
-            Robot.hatchArm.isHatchGrabberOpen = false;
+            Robot.hatchArm.isSlideForward = !isGet;
+            Robot.hatchArm.isHatchGrabberOpen = isGet;
             this.setTimeout(this.timeSinceInitialized() + 0.7);
         }
-        calculateAngularPower();
         double forwardSpeed = Math.max(0,calculateForwardPower());
         double angleOverride=control.getAutoAngleOverride()/4.0;
         Robot.driveTrain.drive.arcadeDrive(forwardSpeed*control.getAutoSpeedCo(), angularPower+angleOverride, false);
-        
+        hud.messages[0] = (isGet? "G":"P")+(isShoot? "S":"");
+    }
+
+    private boolean isShoot(){
+        double predictedDis=toTargetDis-Constants.SHOOT_DIS-linSpeed*0.5;
+        hud.messages[1]=String.format("%.1f",predictedDis/1000);
+        return predictedDis<Constants.SHOOT_DIS;
     }
 
     private boolean isContinue(){
@@ -77,17 +79,13 @@ public class AutoRun extends Command {
         angularError = ((angularError % 360) + 360) % 360;
         if (angularError > 180)
             angularError -= 360;
+        SmartDashboard.putNumber("error", angularError);
         return true;
     }
 
     void calculateAngularPower() {
-        integral += (angularError * 0.02);
-        derivative = Double.isNaN(previousError)? 0:(angularError - previousError) / 0.02;
-        previousError=angularError;
-        if (Math.abs(angularPower) > 1 || integral * angularError < 0 || Math.abs(angularError)>5)
-            integral = 0;
-        angularPower = P * angularError + I * integral + D * derivative;
-        double linSpeed=Robot.driveTrain.getLinearSpeed(), min_turn;
+        angularPower=P*angularError;
+        double min_turn;
         if(Math.abs(linSpeed)<10)
             min_turn=Constants.MIN_TURN_SPEED*2.5;
         else{
@@ -97,24 +95,15 @@ public class AutoRun extends Command {
             // min_turn=Math.min(1, Math.max(0.3, min_turn))*Constants.MIN_TURN_SPEED;
         }
         SmartDashboard.putNumber("minTurn", min_turn);
-        // SmartDashboard.putNumber("lin_speed", Robot.driveTrain.getLinearSpeed());
         if (Math.abs(angularError) > Constants.MAX_ALLOWED_ANGLE_ERROR && Math.abs(angularPower) < min_turn)
-        {
             angularPower = Math.signum(angularError)*min_turn;
-            integral=0;
-        }
     }
 
     private double calculateForwardPower(){
-        hud.messages[1]=String.format("%.1f",(toTargetDis-Constants.SHOOT_DIS)/1000);
-        if(toTargetDis<Constants.CLOSE_DIS || control.isAutoClose()){
-            hud.messages[0]=isShoot? "ST":"IC";
+        if(Math.abs(angularError)>7 && !isShoot)return 0;
+        if(toTargetDis<Constants.CLOSE_DIS)
             return Constants.CLOSE_SPEED-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY;
-        }
-        hud.messages[0]=isShoot? "ST":"A";
-        double k=(toTargetDis-Constants.CLOSE_DIS)/Constants.CLOSE_DIS;
-        if(k>1)
-            k=1;
+        double k=Math.min(1 , (toTargetDis-Constants.CLOSE_DIS) / Constants.CLOSE_DIS);
         return Constants.CLOSE_SPEED+Constants.START_ADDITION_SPEED*k-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY*k;
     }
 
@@ -122,7 +111,6 @@ public class AutoRun extends Command {
     protected boolean isFinished() {
         return this.isTimedOut();
     }
-
     @Override
     protected void end() {
         System.out.printf("auto finish with delta: %.1f time:%.1f\n", angularError, this.timeSinceInitialized());

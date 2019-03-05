@@ -24,7 +24,7 @@ public class Constants{
     public static final double CLOSE_DIS=1650; //mm
     public static final double MAX_ALLOWED_ANGLE_ERROR = 2; //deg
     public static final double AUTO_ANGULAR_COMPENSATION=0; //deg math convention
-    public static final double MIN_TURN_SPEED=0.13; //rotational pwr
+    public static final double MIN_TURN_SPEED=0.12; //rotational pwr
     public static final double CLOSE_SPEED=0.26; //linear pwr
     public static final double START_ADDITION_SPEED=0.25; //linear pwr
     public static final double CLOSE_ANGULAR_ERROR_PENALTY=0.015; // deg/linear_pwr
@@ -40,10 +40,10 @@ public class Constants{
     public static final int DRIVETRAIN_VELOCITY_SLOT=0;
     // public static final double Aff = 1023/4000;
     //ARM
-    public static final Gains ARM_POSITION_GAINS=new Gains(80,0.05,800,0,3,1);
+    public static final Gains ARM_POSITION_GAINS=new Gains(80,0.05,1000,0,3,1);
     public static final int ARM_POSITION_SLOT=0;
     public static final double DEFAULT_CLOSED_RAMP=0.6;
-    public static final double[] ARM_POSITION = {892,938,961};
+    public static final double[] ARM_POSITION = {889,938,961};
 
     public static class Gains {
         public final double kP;

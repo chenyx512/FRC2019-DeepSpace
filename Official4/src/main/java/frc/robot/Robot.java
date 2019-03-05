@@ -21,15 +21,15 @@ import frc.robot.subsystems.*;
 public class Robot extends TimedRobot {
     public static DriveTrain driveTrain = new DriveTrain();
     public static HatchArm hatchArm = new HatchArm();
-    // public static Climber climber = new Climber();
+    public static Climber climber = new Climber();
+    public static int loopCnt=0;
 
     public static Compressor compressor = new Compressor(0);
     private static RobotState robotState=RobotState.getInstance();
     private static Control control = Control.getInstance();
     private static HUD hud= HUD.getInstance();
     private static Vision vision=Vision.getInstance();
-    private static int loopCnt=0;
-    private static Command autoRun = new AutoRun();
+    private static AutoRun autoRun = new AutoRun();
 
     @Override
     public void robotInit() {
@@ -57,11 +57,19 @@ public class Robot extends TimedRobot {
     }
 
     private void commonPeriodic(){
-        // System.out.printf("time %.3f\n",Timer.getFPGATimestamp());
-        if(control.isEstop() && autoRun.isRunning())
-            autoRun.cancel();
-        if(control.isStartAuto() && !autoRun.isRunning())
-            autoRun.start();
+        if(autoRun.isRunning()){
+            if(control.isEstop())
+                autoRun.cancel(); 
+        }
+        else{
+            if(control.isStartAutoGet()){
+                autoRun.isGet=true;
+                autoRun.start();
+            } else if(control.isStartAutoPost()){
+                autoRun.isGet=false;
+                autoRun.start();
+            }
+        }
         Scheduler.getInstance().run();
     }
 

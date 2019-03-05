@@ -20,17 +20,17 @@ public class Climber extends Subsystem {
     }
 
     public Climber(){
-        front=new DoubleSolenoid(1,0,1);
-        back=new DoubleSolenoid(1,2,3);
-        masterTalon=new WPI_TalonSRX(5);
+        front=new DoubleSolenoid(1,2,3);
+        back=new DoubleSolenoid(1,0,1);
+        masterTalon=new WPI_TalonSRX(5);//TODO look at ports
         slaveTalon=new WPI_TalonSRX(6);
+        slaveTalon.follow(masterTalon);
     }
 
     @Override
     public void periodic(){
-        if(control.isEndGame())
-            isEndGame=true;
         if(control.isAllDown()){
+            isEndGame=true;
             front.set(Value.kForward);
             back.set(Value.kForward);
         }else{

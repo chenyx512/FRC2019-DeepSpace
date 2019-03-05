@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.commands.DriveWithJoystick;
 
 public class DriveTrain extends Subsystem {
@@ -22,11 +23,14 @@ public class DriveTrain extends Subsystem {
 
     @Override
     public void periodic(){
-        SmartDashboard.putNumber("left", leftMaster.getSelectedSensorPosition());
-        SmartDashboard.putNumber("right", rightMaster.getSelectedSensorPosition());
-        SmartDashboard.putNumber("leftV", leftMaster.getSelectedSensorVelocity());
-        SmartDashboard.putNumber("rightV", rightMaster.getSelectedSensorVelocity());
+        if((Robot.loopCnt&7)==0){
+            SmartDashboard.putNumber("left", leftMaster.getSelectedSensorPosition());
+            SmartDashboard.putNumber("right", rightMaster.getSelectedSensorPosition());
+            SmartDashboard.putNumber("leftV", leftMaster.getSelectedSensorVelocity());
+            SmartDashboard.putNumber("rightV", rightMaster.getSelectedSensorVelocity());
+        }
     }
+
     public DriveTrain() {
         leftMaster = new WPI_TalonSRX(3);
         configTalon(leftMaster);

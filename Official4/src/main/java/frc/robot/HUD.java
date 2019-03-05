@@ -33,6 +33,9 @@ public class HUD{
         new Thread(() -> {
                 UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
                 camera.setResolution(Constants.HUD_WIDTH, Constants.HUD_HEIGHT);
+                camera.setExposureManual(40);
+                camera.setWhiteBalanceManual(5000);
+                camera.setFPS(20);
                 
                 CvSink cvSink = CameraServer.getInstance().getVideo();
                 CvSource outputStream = CameraServer.getInstance().putVideo("HUD", Constants.HUD_WIDTH, Constants.HUD_HEIGHT);
@@ -43,7 +46,7 @@ public class HUD{
                     long err=cvSink.grabFrame(source);
                     if(err==0)
                     {
-                        System.out.printf("timeout acq\n");
+                        System.out.printf("timeout acq cam\n");
                         continue;
                     }
                     Pose lockedTarget=vision.getLockedTarget();

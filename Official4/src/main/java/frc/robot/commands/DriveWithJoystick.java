@@ -12,8 +12,8 @@ public class DriveWithJoystick extends Command {
 
     @Override
     protected void execute() {
-        double linearSpeed = control.getSpeed();
-        double rotationSpeed = control.getSpeed() * (control.isQuickTurn()? 0.7:1);
+        double linearSpeed = 0.6;
+        double rotationSpeed = control.isQuickTurn()? 0.45:6;
         double backingComp=control.getForwardThrottle()<0 && !control.isQuickTurn()? -1:1;
         Robot.driveTrain.drive.curvatureDrive(control.getForwardThrottle() * linearSpeed,
                 control.getRotationThrottle() * backingComp * rotationSpeed, control.isQuickTurn());

@@ -20,7 +20,7 @@ public class RobotState implements Runnable{
     }
     private RobotState(){
         Pose startPose=new Pose(0,0,90);
-        pigeon=new PigeonIMU(Robot.driveTrain.getPigeonTalon());
+        pigeon=new PigeonIMU(Robot.climber.masterTalon);
         pigeon.setFusedHeading(startPose.theta);
         poseHistory=new InterpolatingTreeMap<InterpolatingDouble, Pose>(Constants.MAX_HISTORY_SIZE);
         addObservation(startPose);

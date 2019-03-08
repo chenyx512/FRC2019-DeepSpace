@@ -32,9 +32,9 @@ public class HUD{
     private HUD(){
         new Thread(() -> {
                 UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+                camera.setExposureAuto();
                 camera.setResolution(Constants.HUD_WIDTH, Constants.HUD_HEIGHT);
-                camera.setExposureManual(40);
-                camera.setWhiteBalanceManual(5000);
+                camera.setWhiteBalanceAuto();
                 camera.setFPS(20);
                 
                 CvSink cvSink = CameraServer.getInstance().getVideo();

@@ -14,10 +14,10 @@ public class Control{
     }
     
     private Joystick drive=new Joystick(0);
-    private Joystick operate=null;
+    private Joystick operate=new Joystick(1);
 
     public boolean isEstop() {
-        return drive.getRawButton(3);
+        return drive.getRawButton(1);
     }
     
     //drivetrain starts
@@ -43,19 +43,13 @@ public class Control{
     //auto starts
     public double getAutoAngleOverride(){
         return 0;
-        // if(operate==null)
-        //     return getRotationThrottle();
-        // double l=operate.getRawAxis(2), r=operate.getRawAxis(3);
-        // return l<0.05? r:-l;
     }
     public double getAutoSpeedCo(){
-        // if(operate==null)
-        //     return 1+getForwardThrottle();
         return 1;
     }
     public boolean getAutoShoot(){
-        return drive.getRawButton(8);
-        // return operate==null? false:operate.getRawButton(6);
+        // return drive.getRawButton(8);
+        return operate==null? drive.getRawButton(8):drive.getRawButton(8)||operate.getRawButton(2);
     }
     public boolean isStartAutoGet(){
         if(operate!=null)
@@ -64,7 +58,7 @@ public class Control{
     }
     public boolean isStartAutoPost(){
         if(operate!=null)
-            return operate.getRawButton(1)||drive.getRawButton(5);
+            return operate.getRawButton(4)||drive.getRawButton(5);
         return drive.getRawButton(5);
     }
     public boolean isLockTarget(){

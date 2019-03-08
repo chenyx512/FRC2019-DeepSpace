@@ -68,7 +68,7 @@ public class Vision{
             System.out.printf("ERR output array length % 4 !=1\n");
             return;
         }
-        timestamp=Timer.getFPGATimestamp()-output[0];
+        timestamp=Timer.getFPGATimestamp()-output[0]-0.005;
         if(output.length==1){
             primaryTarget=null;
             potentialTargets=null;
@@ -80,7 +80,7 @@ public class Vision{
         int lockIndex=-1;
         for(int i=0;i<targetCnt;i++){
             targets[i]=getCoordinate(output[i*4+1], output[i*4+3], output[i*4+4], pose);
-            if(curLockedTarget!=null && lockIndex==-1 && targets[i].distance(curLockedTarget)<Constants.LOCK_ERROR)
+            if(curLockedTarget!=null && lockIndex==-1 && output[i*4+2]<30 && targets[i].distance(curLockedTarget)<Constants.LOCK_ERROR)
             {
                 lockIndex=i;
                 // System.out.printf("update lock at time=%.4f\n",Timer.getFPGATimestamp());

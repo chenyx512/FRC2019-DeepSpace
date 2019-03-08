@@ -16,7 +16,7 @@ public class HatchArm extends Subsystem {
     }
     public HatchArm(){
         hatchGrabber=new Solenoid(0,1);
-        slide=new Solenoid(0,0);
+        slide=new Solenoid(0,2);
     }
     
     @Override
@@ -25,7 +25,7 @@ public class HatchArm extends Subsystem {
             isHatchGrabberOpen^=true;
         if(control.isChangeDrawSlide())
             isSlideForward^=true;
-        hatchGrabber.set(isHatchGrabberOpen);
+        hatchGrabber.set(!isHatchGrabberOpen);
         slide.set(isSlideForward);
         hud.messages[2]=(isSlideForward? "--":"")+(isHatchGrabberOpen? "<":">");
     }

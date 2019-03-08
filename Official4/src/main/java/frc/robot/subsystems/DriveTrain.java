@@ -13,7 +13,8 @@ import frc.robot.Robot;
 import frc.robot.commands.DriveWithJoystick;
 
 public class DriveTrain extends Subsystem {
-    private static WPI_TalonSRX leftMaster, rightMaster, leftSlave, rightSlave;
+    public static WPI_TalonSRX leftMaster, rightMaster;
+    private static WPI_TalonSRX leftSlave, rightSlave;
     public static DifferentialDrive drive;
 
     @Override
@@ -54,8 +55,10 @@ public class DriveTrain extends Subsystem {
         rightMaster.configSelectedFeedbackCoefficient(0.325);
 
         drive = new DifferentialDrive(leftMaster, rightMaster);
+        drive.setDeadband(0);
         drive.setRightSideInverted(false);
         drive.setExpiration(0.4);
+        drive.setSafetyEnabled(false);
     }
 
     private void configTalon(WPI_TalonSRX talon) {
@@ -91,12 +94,12 @@ public class DriveTrain extends Subsystem {
         master.configClosedloopRamp(Constants.DEFAULT_CLOSED_RAMP);
     }
 
-    public void openRamp(double ramp){
-        leftMaster.configOpenloopRamp(ramp);
-        rightMaster.configOpenloopRamp(ramp);
-        leftSlave.configOpenloopRamp(ramp);
-        rightSlave.configOpenloopRamp(ramp);
-    }
+    // public void openRamp(double ramp){
+    //     leftMaster.configOpenloopRamp(ramp);
+    //     rightMaster.configOpenloopRamp(ramp);
+    //     leftSlave.configOpenloopRamp(ramp);
+    //     rightSlave.configOpenloopRamp(ramp);
+    // }
 
     public synchronized int getLeftPosition(){
         return leftMaster.getSelectedSensorPosition();
@@ -106,8 +109,5 @@ public class DriveTrain extends Subsystem {
     }
     public synchronized int getLinearSpeed(){
         return leftMaster.getSelectedSensorVelocity()*5+rightMaster.getSelectedSensorVelocity()*5;
-    }
-    public WPI_TalonSRX getPigeonTalon(){
-        return rightSlave;
     }
 }

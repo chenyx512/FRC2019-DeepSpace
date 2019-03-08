@@ -11,7 +11,7 @@ import frc.robot.Control;
 
 public class Climber extends Subsystem {
     private DoubleSolenoid front, back;
-    private WPI_TalonSRX masterTalon, slaveTalon;
+    public WPI_TalonSRX masterTalon, slaveTalon;
     private Control control=Control.getInstance();
     private boolean isEndGame=false;
 
@@ -22,9 +22,11 @@ public class Climber extends Subsystem {
     public Climber(){
         front=new DoubleSolenoid(1,2,3);
         back=new DoubleSolenoid(1,0,1);
-        masterTalon=new WPI_TalonSRX(5);//TODO look at ports
-        slaveTalon=new WPI_TalonSRX(6);
+        masterTalon=new WPI_TalonSRX(9);//TODO look at ports
+        slaveTalon=new WPI_TalonSRX(10);
         slaveTalon.follow(masterTalon);
+        masterTalon.setInverted(true);
+        slaveTalon.setInverted(false);
     }
 
     @Override

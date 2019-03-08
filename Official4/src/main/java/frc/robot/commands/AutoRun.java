@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.*;
@@ -13,7 +15,8 @@ public class AutoRun extends Command {
     private Control control=Control.getInstance();
     private HUD hud=HUD.getInstance();
 
-    private double P=0.02;
+    private double P=10, I=0.3;
+    private double previousError, integral, lastTime;
     private double toTargetDis, toTargetTheta, angularPower = 0, angularError = 0;
     private boolean isShoot;
     private Pose pose, target;
@@ -29,6 +32,9 @@ public class AutoRun extends Command {
         vision.setPrimaryLock();
         if(!isContinue())
             return;
+        previousError=angularError;
+        integral=0;
+        lastTime=this.timeSinceInitialized();
         isShoot = false;
         Robot.hatchArm.isSlideForward = isGet;
         Robot.hatchArm.isHatchGrabberOpen = !isGet;
@@ -47,16 +53,23 @@ public class AutoRun extends Command {
             Robot.hatchArm.isHatchGrabberOpen = isGet;
             this.setTimeout(this.timeSinceInitialized() + 0.7);
         }
-        double forwardSpeed = Math.max(0,calculateForwardPower());
-        double angleOverride=control.getAutoAngleOverride()/4.0;
-        Robot.driveTrain.drive.arcadeDrive(forwardSpeed*control.getAutoSpeedCo(), angularPower+angleOverride, false);
+        angularPower=P*angularError;
+        if(Math.abs(angularError)<5)
+            integral+=angularError*I*(this.timeSinceInitialized()-lastTime);
+        else
+            integral=0;
+        lastTime=this.timeSinceInitialized();
+        double forwardSpeed = Math.max(0,calculateForwardPower())*control.getAutoSpeedCo() * 2400;
+        Robot.driveTrain.leftMaster.set(ControlMode.Velocity, (forwardSpeed+angularPower)/10);
+        Robot.driveTrain.rightMaster.set(ControlMode.Velocity, (forwardSpeed-angularPower)/10);
         hud.messages[0] = (isGet? "G":"P")+(isShoot? "S":"");
+        // Robot.driveTrain.drive.arcadeDrive(forwardSpeed*control.getAutoSpeedCo(), angularPower+angleOverride, false);
     }
 
     private boolean isShoot(){
-        double predictedDis=toTargetDis-Constants.SHOOT_DIS-linSpeed*0.5;
+        double predictedDis=toTargetDis-Constants.SHOOT_DIS-(isGet? 0:linSpeed*0.5);
         hud.messages[1]=String.format("%.1f",predictedDis/1000);
-        return predictedDis<Constants.SHOOT_DIS;
+        return predictedDis<Constants.SHOOT_DIS && !isShoot;
     }
 
     private boolean isContinue(){
@@ -74,7 +87,7 @@ public class AutoRun extends Command {
             this.cancel();
             return false;
         }
-        toTargetTheta = Math.toDegrees(Math.atan2(target.y - pose.y, target.x - pose.x));
+        toTargetTheta = Math.toDegrees(Math.atan2(target.y - pose.y, target.x - pose.x))+compensateOffset();
         angularError = robotState.getPose().theta - toTargetTheta;
         angularError = ((angularError % 360) + 360) % 360;
         if (angularError > 180)
@@ -83,28 +96,25 @@ public class AutoRun extends Command {
         return true;
     }
 
-    void calculateAngularPower() {
-        angularPower=P*angularError;
-        double min_turn;
-        if(Math.abs(linSpeed)<10)
-            min_turn=Constants.MIN_TURN_SPEED*2.5;
-        else{
-            min_turn=Constants.MIN_TURN_SPEED;
-            // min_turn=Math.abs(linSpeed/300);
-            // min_turn=10*Math.pow(0.5*min_turn-0.57, 4);
-            // min_turn=Math.min(1, Math.max(0.3, min_turn))*Constants.MIN_TURN_SPEED;
-        }
-        SmartDashboard.putNumber("minTurn", min_turn);
-        if (Math.abs(angularError) > Constants.MAX_ALLOWED_ANGLE_ERROR && Math.abs(angularPower) < min_turn)
-            angularPower = Math.signum(angularError)*min_turn;
+    private double calculateForwardPower(){
+        if(toTargetDis<Constants.CLOSE_DIS)
+            if(Math.abs(angularError)>6 && !isShoot)return 0;
+            else return Constants.CLOSE_SPEED-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY;
+        double k=Math.min(1 , (toTargetDis-Constants.CLOSE_DIS) / Constants.CLOSE_DIS);
+        if(Math.abs(angularError)>6*(1+k) && !isShoot)
+            return 0;
+        else return Constants.CLOSE_SPEED+Constants.START_ADDITION_SPEED*k-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY*k;
     }
 
-    private double calculateForwardPower(){
-        if(Math.abs(angularError)>7 && !isShoot)return 0;
-        if(toTargetDis<Constants.CLOSE_DIS)
-            return Constants.CLOSE_SPEED-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY;
-        double k=Math.min(1 , (toTargetDis-Constants.CLOSE_DIS) / Constants.CLOSE_DIS);
-        return Constants.CLOSE_SPEED+Constants.START_ADDITION_SPEED*k-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY*k;
+    private double compensateOffset(){
+        if(Double.isNaN(target.theta) || isGet)
+            return -Constants.PHYSICAL_OFFSET;
+        double RV= ((target.theta-toTargetTheta)%360+360)%360;
+        if(RV>180)RV-=360;
+        RV*=-1;
+        if(Math.abs(RV)>Constants.OFFSET_THRESH)
+            return Math.signum(RV)*Constants.OFFSET_COMP-Constants.PHYSICAL_OFFSET;
+        else return -Constants.PHYSICAL_OFFSET;
     }
 
     @Override

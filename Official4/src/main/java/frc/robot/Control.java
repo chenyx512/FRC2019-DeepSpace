@@ -17,6 +17,8 @@ public class Control{
     private Joystick operate=new Joystick(1);
 
     public boolean isEstop() {
+        if(operate!=null)
+            return operate.getRawButton(2)||drive.getRawButton(1);
         return drive.getRawButton(1);
     }
     
@@ -36,8 +38,11 @@ public class Control{
     public boolean isBackUp(){
         return drive.getRawButton(11);
     }
-    public boolean isAllDown(){
+    public boolean isFrontDown(){
         return drive.getRawButton(7);
+    }
+    public boolean isBackDown(){
+        return drive.getRawButton(12);
     }
 
     //auto starts
@@ -48,8 +53,8 @@ public class Control{
         return 1;
     }
     public boolean getAutoShoot(){
-        // return drive.getRawButton(8);
-        return operate==null? drive.getRawButton(8):drive.getRawButton(8)||operate.getRawButton(2);
+        return drive.getRawButton(8);
+        // return operate==null? drive.getRawButton(8):drive.getRawButton(8)||operate.getRawButton(2);
     }
     public boolean isStartAutoGet(){
         if(operate!=null)
@@ -62,8 +67,8 @@ public class Control{
         return drive.getRawButton(5);
     }
     public boolean isLockTarget(){
-        if(operate!=null)
-            return operate.getRawButton(3)||drive.getRawButton(10);
+        // if(operate!=null)
+        //     return operate.getRawButton(3)||drive.getRawButton(10);
         return drive.getRawButton(10);
     }
 }

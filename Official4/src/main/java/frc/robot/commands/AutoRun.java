@@ -15,7 +15,7 @@ public class AutoRun extends Command {
     private Control control=Control.getInstance();
     private HUD hud=HUD.getInstance();
 
-    private double P=10, I=0.3;
+    private double P=8, I=0.45;
     private double previousError, integral, lastTime;
     private double toTargetDis, toTargetTheta, angularPower = 0, angularError = 0;
     private boolean isShoot;
@@ -51,7 +51,7 @@ public class AutoRun extends Command {
             isShoot = true;
             Robot.hatchArm.isSlideForward = !isGet;
             Robot.hatchArm.isHatchGrabberOpen = isGet;
-            this.setTimeout(this.timeSinceInitialized() + 0.7);
+            this.setTimeout(this.timeSinceInitialized() + (isGet? 0.15:0.45) );
         }
         angularPower=P*angularError;
         if(Math.abs(angularError)<5)
@@ -67,7 +67,7 @@ public class AutoRun extends Command {
     }
 
     private boolean isShoot(){
-        double predictedDis=toTargetDis-Constants.SHOOT_DIS-(isGet? 0:linSpeed*0.5);
+        double predictedDis=toTargetDis-Constants.SHOOT_DIS-(isGet? 0:linSpeed*0.4);
         hud.messages[1]=String.format("%.1f",predictedDis/1000);
         return predictedDis<Constants.SHOOT_DIS && !isShoot;
     }
@@ -107,14 +107,17 @@ public class AutoRun extends Command {
     }
 
     private double compensateOffset(){
+        double k=Math.max(0,Math.min(1 , 1-(toTargetDis-Constants.CLOSE_DIS) / Constants.CLOSE_DIS / 2));;
+        if(isGet)
+            k/=2; // avoid overcompensation due to fully extended slide
         if(Double.isNaN(target.theta) || isGet)
-            return -Constants.PHYSICAL_OFFSET;
+            return -Constants.PHYSICAL_OFFSET*k;
         double RV= ((target.theta-toTargetTheta)%360+360)%360;
         if(RV>180)RV-=360;
         RV*=-1;
-        if(Math.abs(RV)>Constants.OFFSET_THRESH)
-            return Math.signum(RV)*Constants.OFFSET_COMP-Constants.PHYSICAL_OFFSET;
-        else return -Constants.PHYSICAL_OFFSET;
+        if(Math.abs(RV)>Constants.OFFSET_THRESH && isGet==false)
+            return Math.signum(RV)*Constants.OFFSET_COMP-Constants.PHYSICAL_OFFSET*k;
+        else return -Constants.PHYSICAL_OFFSET*k;
     }
 
     @Override

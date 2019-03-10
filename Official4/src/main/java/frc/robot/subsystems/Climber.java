@@ -31,11 +31,14 @@ public class Climber extends Subsystem {
 
     @Override
     public void periodic(){
-        if(control.isAllDown()){
+        if(control.isFrontDown() || control.isBackDown()){
             isEndGame=true;
-            front.set(Value.kForward);
-            back.set(Value.kForward);
-        }else{
+            if(control.isFrontDown())
+                front.set(Value.kForward);
+            if(control.isBackDown())
+                back.set(Value.kForward);
+        }
+        else {
             back.set(control.isBackUp()? Value.kReverse:Value.kOff);
             front.set(control.isFrontUp()? Value.kReverse:Value.kOff);
         }

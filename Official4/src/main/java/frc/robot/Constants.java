@@ -20,14 +20,14 @@ public class Constants{
     public static final double LOCK_MAX_UPDATE_DURATION=5; //sec
 
     //auto constants
-    public static final double SHOOT_DIS=220; //mm
+    public static final double SHOOT_DIS=180; //mm
     public static final double CLOSE_DIS=800; //mm
     public static final double CLOSE_SPEED=0.26; //linear pwr
-    public static final double OFFSET_THRESH=10;
-    public static final double OFFSET_COMP=0;
+    public static final double OFFSET_THRESH=15;
+    public static final double OFFSET_COMP=2;
     public static final double START_ADDITION_SPEED=0.25; //linear pwr
-    public static final double CLOSE_ANGULAR_ERROR_PENALTY=0.012; // deg/linear_pwr
-    public static final double PHYSICAL_OFFSET=3.5; // deg/linear_pwr
+    public static final double CLOSE_ANGULAR_ERROR_PENALTY=0.0135; // deg/linear_pwr
+    public static final double PHYSICAL_OFFSET=0;
 
     //Talon DRIVETRAIN
     public static final double DRIVETRAIN_ENCODER_K=0.3015; // actual:read, 0.4854
@@ -36,11 +36,11 @@ public class Constants{
     public static final int DRIVE_PEAK_CURRENT_LIMIT = 50; //amps
     public static final int DRIVE_CONTINUOUS_CURRENT_LIMIT = 20; //amps
     public static final double TALON_MAX_VOLTAGE = 12.5;
-    public static final Gains DRIVETRAIN_VELOCITY_GAINS=new Gains(3.5,0.01,35,1023/340.0,20,1);
+    public static final Gains DRIVETRAIN_VELOCITY_GAINS=new Gains(3.5,0.01,40,1023/340.0,20,1);
     public static final int DRIVETRAIN_VELOCITY_SLOT=0;
     // public static final double Aff = 1023/4000;
     //ARM
-    public static final Gains ARM_POSITION_GAINS=new Gains(80,0.05,1000,0,3,1);
+    public static final Gains ARM_POSITION_GAINS=new Gains(80,0.06,1000,0,3,1);
     public static final int ARM_POSITION_SLOT=0;
     public static final double DEFAULT_CLOSED_RAMP=0.75;
     public static final double[] ARM_POSITION = {889,938,961};

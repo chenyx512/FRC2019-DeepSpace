@@ -27,7 +27,7 @@ public class Constants{
     public static final double OFFSET_COMP=2;
     public static final double START_ADDITION_SPEED=0.25; //linear pwr
     public static final double CLOSE_ANGULAR_ERROR_PENALTY=0.0135; // deg/linear_pwr
-    public static final double PHYSICAL_OFFSET=0;
+    public static final double PHYSICAL_OFFSET=1;
 
     //Talon DRIVETRAIN
     public static final double DRIVETRAIN_ENCODER_K=0.3015; // actual:read, 0.4854

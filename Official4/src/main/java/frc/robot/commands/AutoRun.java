@@ -7,6 +7,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.*;
 import frc.robot.libs.*;
 
+/**
+ * Before calling Command.start, set the isGet variable first.
+ * it is actually better to change from pure P control to a arc to the target
+ * I and D terms are not used here but are used by talon velocity control
+ */
 public class AutoRun extends Command {
     public boolean isGet=false;
 
@@ -15,12 +20,11 @@ public class AutoRun extends Command {
     private Control control=Control.getInstance();
     private HUD hud=HUD.getInstance();
 
-    private double P=8, I=0.45;
-    private double previousError, integral, lastTime;
+    private double P=8.5, I=0.3;
     private double toTargetDis, toTargetTheta, angularPower = 0, angularError = 0;
     private boolean isShoot;
     private Pose pose, target;
-    double linSpeed;
+    private double linSpeed;
 
     public AutoRun() {
         requires(Robot.driveTrain);
@@ -32,9 +36,6 @@ public class AutoRun extends Command {
         vision.setPrimaryLock();
         if(!isContinue())
             return;
-        previousError=angularError;
-        integral=0;
-        lastTime=this.timeSinceInitialized();
         isShoot = false;
         Robot.hatchArm.isSlideForward = isGet;
         Robot.hatchArm.isHatchGrabberOpen = !isGet;
@@ -49,21 +50,16 @@ public class AutoRun extends Command {
         if (isShoot()) {
             System.out.println("!!!!!!!!!!!!! shoot !!!!!!!!!!!!!");
             isShoot = true;
-            Robot.hatchArm.isSlideForward = !isGet;
+            if(!isGet)
+                Robot.hatchArm.isSlideForward = true;
             Robot.hatchArm.isHatchGrabberOpen = isGet;
             this.setTimeout(this.timeSinceInitialized() + (isGet? 0.15:0.45) );
         }
         angularPower=P*angularError;
-        if(Math.abs(angularError)<5)
-            integral+=angularError*I*(this.timeSinceInitialized()-lastTime);
-        else
-            integral=0;
-        lastTime=this.timeSinceInitialized();
         double forwardSpeed = Math.max(0,calculateForwardPower())*control.getAutoSpeedCo() * 2400;
         Robot.driveTrain.leftMaster.set(ControlMode.Velocity, (forwardSpeed+angularPower)/10);
         Robot.driveTrain.rightMaster.set(ControlMode.Velocity, (forwardSpeed-angularPower)/10);
         hud.messages[0] = (isGet? "G":"P")+(isShoot? "S":"");
-        // Robot.driveTrain.drive.arcadeDrive(forwardSpeed*control.getAutoSpeedCo(), angularPower+angleOverride, false);
     }
 
     private boolean isShoot(){
@@ -96,6 +92,9 @@ public class AutoRun extends Command {
         return true;
     }
 
+    /**
+     * The closer and the more disaligned the robot is, the slower it should go
+     */
     private double calculateForwardPower(){
         if(toTargetDis<Constants.CLOSE_DIS)
             if(Math.abs(angularError)>6 && !isShoot)return 0;
@@ -106,10 +105,14 @@ public class AutoRun extends Command {
         else return Constants.CLOSE_SPEED+Constants.START_ADDITION_SPEED*k-Math.abs(angularError)*Constants.CLOSE_ANGULAR_ERROR_PENALTY*k;
     }
 
+    /**
+     * This method compensates for:
+     * 1) The physical offset of the camera relative to the arm
+     * 2) The needed compensation due to the robot going in at an angle not normal to the hatch,
+     *         eg: when the robot is too much to the left, to needs to turn right a bit for the hatch not to hit the left bolts
+     */
     private double compensateOffset(){
         double k=Math.max(0,Math.min(1 , 1-(toTargetDis-Constants.CLOSE_DIS) / Constants.CLOSE_DIS / 2));;
-        if(isGet)
-            k/=2; // avoid overcompensation due to fully extended slide
         if(Double.isNaN(target.theta) || isGet)
             return -Constants.PHYSICAL_OFFSET*k;
         double RV= ((target.theta-toTargetTheta)%360+360)%360;
@@ -126,6 +129,7 @@ public class AutoRun extends Command {
     }
     @Override
     protected void end() {
+        Robot.hatchArm.isSlideForward=false;
         System.out.printf("auto finish with delta: %.1f time:%.1f\n", angularError, this.timeSinceInitialized());
     }
     @Override
@@ -134,44 +138,3 @@ public class AutoRun extends Command {
         end();
     }
 }
-
-// private double compensateOffset(double currentTheta){
-    //     if(Double.isNaN(target.theta))
-    //         return 0;
-    //     double RV= ((target.theta-toTargetTheta)%360+360)%360;
-    //     if(RV>180)RV-=360;
-    //     if(toTargetDis<Constants.CLOSE_DIS){
-    //         RV/=-10;
-    //         if(Math.abs(RV)>4)
-    //             RV=4*Math.signum(RV);
-    //         System.out.printf("RV:%.1f\n", RV);
-    //     }
-    //     else{
-    //         if(RV<5)return 0;
-    //         RV*=-0.8;
-    //         if(Math.abs(RV)>25)
-    //             RV=25*Math.signum(RV);
-    //         if(toTargetDis<2*Constants.CLOSE_DIS)
-    //             RV*=toTargetDis/Constants.CLOSE_DIS-1;
-    //     }
-    //     SmartDashboard.putNumber("offset", RV);
-    //     return RV+Constants.AUTO_ANGULAR_COMPENSATION;
-    // }
-
-    
-    // double overrideAngle = SmartDashboard.getNumber("overrideTheta", 0);
-    // // above is for testing angle turning, remember to check forwardSpeed as well when use
-    // if (Math.abs(overrideAngle) > 0.1) {
-    //     targetTheta = robotState.getCurrentPose().theta - overrideAngle;
-    //     angularError = previousError = getDelta();
-    //     System.out.printf("override angle\n");
-    //     return;
-    // } else if (!vision.isConnected) {
-    //     System.out.println("pi disconnected, command returns");
-    //     this.cancel();
-    //     return;
-    // } else if (!vision.isFindTarget) {
-    //     System.out.println("no unique target found, command returns");
-    //     this.cancel();
-    //     return;
-    // }

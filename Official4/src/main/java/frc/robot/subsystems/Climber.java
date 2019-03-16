@@ -22,7 +22,7 @@ public class Climber extends Subsystem {
     public Climber(){
         front=new DoubleSolenoid(1,2,3);
         back=new DoubleSolenoid(1,0,1);
-        masterTalon=new WPI_TalonSRX(9);//TODO look at ports
+        masterTalon=new WPI_TalonSRX(9);
         slaveTalon=new WPI_TalonSRX(10);
         slaveTalon.follow(masterTalon);
         masterTalon.setInverted(true);

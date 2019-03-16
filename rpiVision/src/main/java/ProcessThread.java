@@ -10,7 +10,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.CvSource;
@@ -19,16 +18,14 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 public class ProcessThread extends Thread{
     public static NetworkTableEntry outputEntry;
     public static CvSource outputStream;
+
     private static final Object entryLock=new Object(), streamLock=new Object();
-    private static Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_CROSS, new Size(3,3));
-    
     private Mat source;
     private double timestamp;
     private int threadNumber;
     private ArrayList<MatOfPoint> contours=new ArrayList<MatOfPoint>();
     private ArrayList<Pretarget>leftTargets=new ArrayList<Pretarget>(), rightTargets=new ArrayList<Pretarget>();
     private ArrayList<Target>targets=new ArrayList<Target>();
-
 
     public ProcessThread(int _threadNumber, Mat _source, double _timestamp){
         threadNumber=_threadNumber;
@@ -61,7 +58,7 @@ public class ProcessThread extends Thread{
             if(Constants.DEBUG)
                 drawRotatedRect(source, rect, new Scalar(255, 0, 0), 2);
             // Collections.sort(left);
-            // Collections.sort(right);
+            // Collections.sort(right); // may be unnecessary
         }
         if(leftTargets.size()>5 || rightTargets.size()>5){
             System.out.printf("too many targets\n");
@@ -95,6 +92,13 @@ public class ProcessThread extends Thread{
         setEntry(output, timestamp);
     }
 
+    /** To make sure that all infomation will be tranfered at once, rpi sends info all in a single array 
+     * if there are k targets, the length of the output array will be 4k+1
+     * output[0] is the time it took from the image being taken to the info being sent
+     * for the i-th target, output[i*4+1] is the angle of the center of the target, positive means right
+     * output[i*4+2] is the angle of left-target to robot to right-target
+     * output[i*4+3] is the height of the left target in pixel, output[i*4+4] is the height of the right target in pixel
+    */
     private static void setEntry(double[] array, double acquireTime){
         synchronized(entryLock){
             array[0]=System.currentTimeMillis()/1000.0-acquireTime;
@@ -108,6 +112,7 @@ public class ProcessThread extends Thread{
         }
     }
 
+    /**input x value, return the angle to the right using pinhole camera model*/
     private double calculateAngle (double x){
         return Math.toDegrees(Math.atan((x-Constants.WIDTH/2)/Constants.FOCAL_LENGTH_HORIZONTAL));
     }
@@ -118,7 +123,7 @@ public class ProcessThread extends Thread{
         MatOfPoint points = new MatOfPoint(vertices);
         Imgproc.drawContours(image, Arrays.asList(points), -1, color, thickness);
     }
-
+    /**a single contour bounded with rectange and rotatedRect */
     private class Pretarget implements Comparable<Pretarget>{
         public Rect rect;
         public RotatedRect minRect;

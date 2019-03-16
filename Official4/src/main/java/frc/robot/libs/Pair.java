@@ -1,5 +1,6 @@
 package frc.robot.libs;
 
+/** written but not used */
 public class Pair<F, S> {
     public F first; //first member of pair
     public S second; //second member of pair

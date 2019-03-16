@@ -2,22 +2,12 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.AutoRun;
 import frc.robot.libs.*;
 import frc.robot.subsystems.*;
 
-/**
- * All subsystems are designed to be as independent as possible, except
- *   control must always be present
- *   RobotState relies on drivetrain (encoders and pigeon are wired to talons)
- *   Vision relies on RobotState
- *   AutoRun, HUD relies on Vision
- * feel free to comment out all unnecessary subsystems and commands
- */
 public class Robot extends TimedRobot {
     public static Climber climber = new Climber();
     public static DriveTrain driveTrain = new DriveTrain();

@@ -14,18 +14,13 @@ import com.google.gson.JsonParser;
 import org.opencv.core.Mat;
 
 import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.vision.VisionThread;
 
-// moves to the pipeline class
-// import org.opencv.core.Mat;
-// import edu.wpi.first.vision.VisionPipeline;
-
+/** this is slightly modified from the wpi version2 */
 public final class Main {
     private static String configFile = "/boot/frc.json";
 
@@ -39,8 +34,6 @@ public final class Main {
     public static int team;
     public static boolean server;
     public static List<CameraConfig> cameraConfigs = new ArrayList<>();
-    private static final Object imgLock = new Object();// this is used to synchronize the getting and sending of data in
-                                                       // different threads
     public static long startTime;
 
     public static void main(String... args) throws ChenyxCameraNumberNotOneException {
@@ -74,7 +67,7 @@ public final class Main {
         for(int cnt=1;;cnt++){
             Mat source=new Mat();
             double timestamp=sink.grabFrameNoTimeout(source)/1000000.0;
-            if(cnt==1){
+            if(cnt==1){ // at the first pass, calculate the focal length for the pin hole camera model to calculate angle
                 Constants.FOCAL_LENGTH_HORIZONTAL=source.width()/2.0/(Math.tan(Math.toRadians(Constants.HORIZONTAL_FOV_DEG/2)));
                 Constants.FOCAL_LENGTH_VERTICAL=source.height()/2.0/(Math.tan(Math.toRadians(Constants.VERTICAL_FOV_DEG/2)));
                 Constants.HEIGHT=source.height();
@@ -194,7 +187,6 @@ public final class Main {
                 return false;
             }
         }
-
         return true;
     }
 }

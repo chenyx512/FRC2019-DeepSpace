@@ -14,7 +14,7 @@ import frc.robot.libs.*;
 /**
  * This class is in charge of communicating with the rpi
  * The isConnected variable tells whether rpi is connected, and timestamp shows the last update of rpi
- * At each update, updateTarget method calculates the target coordinate
+ * At each update, updateTarget method calculates the target coordinate, and also updates locked target if it is close to one of the calculated ones
  */
 public class Vision{
     private static Vision instance;
@@ -51,10 +51,9 @@ public class Vision{
     }
 
     private void updateConnection(){
-        // System.out.printf("here: %.2f\n",Timer.getFPGATimestamp()-timestamp);
         if(Timer.getFPGATimestamp()-timestamp>Constants.VISION_DISCONNECT_TIME){
             isConnected=false;
-            lockedTarget=null;
+            setLockedTarget(null);
         } else
             isConnected=true;
         if(control.isLockTarget())
@@ -111,7 +110,6 @@ public class Vision{
     }
 
     private Pt getCoordinate(double x, double lh, double rh, Pose pose){
-        // x-=1;
         double angle = Math.toRadians(pose.theta - x);
         double dis=(Constants.VISION_DISTANCE_CONSTANT/lh+Constants.VISION_DISTANCE_CONSTANT/rh)/2;
         return new Pt(pose.x+Math.cos(angle)*dis, pose.y+Math.sin(angle)*dis);
@@ -135,9 +133,10 @@ public class Vision{
         return potentialTargets;
     }
     public void setPrimaryLock(){
-        if(primaryTarget==null)
+        Pt _primaryTarget=primaryTarget;
+        if(_primaryTarget==null)
             setLockedTarget(null);
         else
-            setLockedTarget(new Pose(primaryTarget, Double.NaN));
+            setLockedTarget(new Pose(_primaryTarget, Double.NaN));
     }
 }

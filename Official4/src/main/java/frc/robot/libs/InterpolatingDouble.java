@@ -1,6 +1,7 @@
 package frc.robot.libs;
 
-/**
+/**!STOLEN FROM 254!
+ * 
  * A Double that can be interpolated using the InterpolatingTreeMap.
  *
  * @see InterpolatingTreeMap

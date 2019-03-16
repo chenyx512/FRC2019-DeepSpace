@@ -5,6 +5,10 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.*;
 
+/**
+ * If the quickTurn button is pressed, this uses the talon to control the rotation SPEED so the robot rotates IN PLACE.
+ * Therefore, pressing quickTurn button while driving fast with the ramp low may fall the robot.
+ */
 public class DriveWithJoystick extends Command {
     private static Control control=Control.getInstance();
     

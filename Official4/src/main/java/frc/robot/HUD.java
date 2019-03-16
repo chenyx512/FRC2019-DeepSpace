@@ -13,6 +13,11 @@ import frc.robot.libs.*;
 
 /**
  * This class is in charge of displaying critical info on driving camera
+ * Potential Targets are represented as green dots, primary target is orange dot, locked target is red square
+ * The target's position on screen: The y coordinate shows distance, the x coordinate shows direction
+ * The first message on HUD, M:manual, P(s):post(and shoot), G(S):get(and shoot), NP: no rpi connection
+ * The second message on HUD is the distance in meter to the shoot position
+ * The third message on HUD shows the current status of the HatchSlide
  */
 public class HUD{
     private static HUD instance;

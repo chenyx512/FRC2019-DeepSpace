@@ -1,13 +1,14 @@
 package frc.robot;
 
-import com.ctre.phoenix.ErrorCode;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.libs.*;
 
+/**
+ * Almost a direct copy of 254's code
+ */
 public class RobotState implements Runnable{
     private static RobotState instance;
     public static RobotState getInstance() {

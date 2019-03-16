@@ -2,6 +2,10 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
 
+/**
+ * The operate/2nd joystick is fully optional.
+ * if that stick is not needed, set it to null
+ */
 public class Control{
     private static Control instance;
     public static Control getInstance() {

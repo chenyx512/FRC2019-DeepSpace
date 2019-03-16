@@ -3,7 +3,8 @@ package frc.robot.libs;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
+/**!STOLEN FROM 254!
+ * 
  * Interpolating Tree Maps are used to get values at points that are not defined by making a guess from points that are
  * defined. This uses linear interpolation.
  *

@@ -60,7 +60,4 @@ public class RobotState implements Runnable{
     public synchronized Pose getPose(){
         return poseHistory.lastEntry().getValue();
     }
-
-    private class RobotStateStartTwiceException extends Exception{
-    }
 }

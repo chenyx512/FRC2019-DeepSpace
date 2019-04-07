@@ -64,11 +64,11 @@ public class Vision{
             return;
         }
         int targetCnt=(output.length-1)/4;
-        Pose pose=robotState.getPose(), curLockedTarget=getLockedTarget();
+        Pose robotToField=robotState.getPose(), curLockedTarget=getLockedTarget();
         Pt[] targets=new Pt[targetCnt];
         int lockIndex=-1;
         for(int i=0;i<targetCnt;i++){
-            targets[i]=getCoordinate(output[i*4+1], output[i*4+3], output[i*4+4], pose);
+            targets[i]=getCoordinate(output[i*4+1], output[i*4+3], output[i*4+4], robotToField);
             if(curLockedTarget!=null && lockIndex==-1 && output[i*4+2]<30 && targets[i].distance(curLockedTarget)<Constants.LOCK_ERROR)
                 lockIndex=i;
         }
@@ -92,15 +92,15 @@ public class Vision{
             double Robot2R2LAngle=Math.toDegrees(Math.asin(targetLDis*Math.sin(Math.toRadians(targetL2RAngle))/L2RDis));
             if(targetLDis>targetRDis)
                 Robot2R2LAngle=180-Robot2R2LAngle; // due to range of arcsin
-            double properAngle=pose.theta+90-targetL2RAngle/2-Robot2R2LAngle;
+            double properAngle=robotToField.theta+90-targetL2RAngle/2-Robot2R2LAngle;
             setLockedTarget(new Pose(targets[lockIndex], properAngle));
         }
     }
 
-    private Pt getCoordinate(double x, double lh, double rh, Pose pose){
+    private Vector getCoordinate(double x, double lh, double rh, Pose pose){
         double angle = Math.toRadians(pose.theta - x);
         double dis=(Constants.VISION_DISTANCE_CONSTANT/lh+Constants.VISION_DISTANCE_CONSTANT/rh)/2;
-        return new Pt(pose.x+Math.cos(angle)*dis, pose.y+Math.sin(angle)*dis);
+        return new Pt(pose.x+Math.cos(angle)*dis, pose.y+Math.sin(angle)*dis).plus(Constants.cameraPt);
     }
 
     private final Object lockedTargetLock=new Object();

@@ -1,7 +1,10 @@
 package frc.robot.chenyxVision;
+import frc.robot.chenyxVision.libs.Pt;
 
-public class Constants{
+public class Constants {
     // localization and vision constants
+    public static final Pt cameraPt = new Pt(100, 0);
+
     public static final double VISION_DISTANCE_CONSTANT = 211; //actualDis*imageHeight (mm*px)
     public static final int MAX_HISTORY_SIZE = 150;
     public static final int HUD_WIDTH=320;
